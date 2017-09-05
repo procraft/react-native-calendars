@@ -81,6 +81,7 @@ class Calendar extends Component {
     this.addMonth = this.addMonth.bind(this);
     this.isSelected = this.isSelected.bind(this);
     this.shouldComponentUpdate = shouldComponentUpdate;
+    this.handleDayPress = this.pressDay.bind(this)
   }
 
   componentWillReceiveProps(nextProps) {
@@ -112,12 +113,13 @@ class Calendar extends Component {
   }
 
   pressDay(day) {
+    const xDay = typeof day === 'string' ? parseDate(day) : day;
     const minDate = parseDate(this.props.minDate);
     const maxDate = parseDate(this.props.maxDate);
-    if (!(minDate && !dateutils.isGTE(day, minDate)) && !(maxDate && !dateutils.isLTE(day, maxDate))) {
-      this.updateMonth(day);
+    if (!(minDate && !dateutils.isGTE(xDay, minDate)) && !(maxDate && !dateutils.isLTE(xDay, maxDate))) {
+      this.updateMonth(xDay);
       if (this.props.onDayPress) {
-        this.props.onDayPress(xdateToData(day));
+        this.props.onDayPress(xdateToData(xDay));
       }
     }
   }
@@ -161,7 +163,7 @@ class Calendar extends Component {
       }
     } else {
       const caption = day.getDate()
-      const onPress = this.pressDay.bind(this, day)
+      const onPress = this.handleDayPress
       if (this.props.renderDay) {
         return this.props.renderDay(day, {key: id, state, caption, onPress})
       } else {
@@ -172,7 +174,7 @@ class Calendar extends Component {
             key={id}
             state={state}
             theme={this.props.theme}
-            onPress={onPress}
+            onPress={() => onPress(day)}
             marked={this.getDateMarking(day)}
             markingExists={markingExists}
           >
@@ -205,7 +207,6 @@ class Calendar extends Component {
   }
 
   render() {
-    //console.log('render calendar ');
     const days = dateutils.page(this.state.currentMonth, this.props.firstDay);
     const weeks = [];
     while (days.length) {
