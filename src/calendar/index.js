@@ -26,6 +26,8 @@ class Calendar extends Component {
 
     // Specify style for calendar container element. Default = {}
     style: viewPropTypes.style,
+    // Specify style for calendar week element. Default = {}
+    weekStyle: viewPropTypes.style,
 
     selected: PropTypes.array,
 
@@ -56,6 +58,8 @@ class Calendar extends Component {
     onVisibleMonthsChange: PropTypes.func,
     // Replace default arrows with custom ones (direction can be 'left' or 'right')
     renderArrow: PropTypes.func,
+    // specify how each date should be rendered.
+    renderDay: PropTypes.func,
     // Month format in calendar title. Formatting values: http://arshaw.com/xdate/#Formatting
     monthFormat: PropTypes.string
   };
@@ -156,20 +160,26 @@ class Calendar extends Component {
         dayComp = (<View key={id} style={{width: 32}}/>);
       }
     } else {
-      const DayComp = this.props.markingType === 'interactive' ? UnitDay : Day;
-      const markingExists = this.props.markedDates ? true : false;
-      dayComp = (
-        <DayComp
+      const caption = day.getDate()
+      const onPress = this.pressDay.bind(this, day)
+      if (this.props.renderDay) {
+        return this.props.renderDay(day, {key: id, state, caption, onPress})
+      } else {
+        const DayComp = this.props.markingType === 'interactive' ? UnitDay : Day;
+        const markingExists = this.props.markedDates ? true : false;
+        dayComp = (
+          <DayComp
             key={id}
             state={state}
             theme={this.props.theme}
-            onPress={this.pressDay.bind(this, day)}
+            onPress={onPress}
             marked={this.getDateMarking(day)}
             markingExists={markingExists}
           >
-            {day.getDate()}
+            {caption}
           </DayComp>
         );
+      }
     }
     return dayComp;
   }
@@ -191,7 +201,7 @@ class Calendar extends Component {
     days.forEach((day, id2) => {
       week.push(this.renderDay(day, id2));
     }, this);
-    return (<View style={this.style.week} key={id}>{week}</View>);
+    return (<View style={[this.style.week, this.props.weekStyle]} key={id}>{week}</View>);
   }
 
   render() {
@@ -206,7 +216,7 @@ class Calendar extends Component {
     if (current) {
       const lastMonthOfDay = current.clone().addMonths(1, true).setDate(1).addDays(-1).toString('yyyy-MM-dd');
       if (this.props.displayLoadingIndicator &&
-          !(this.props.markedDates && this.props.markedDates[lastMonthOfDay])) {
+        !(this.props.markedDates && this.props.markedDates[lastMonthOfDay])) {
         indicator = true;
       }
     }
