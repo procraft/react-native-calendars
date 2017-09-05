@@ -16,10 +16,10 @@ export default function(theme={}) {
       fontFamily: appStyle.textMonthFontFamily,
       fontWeight: '300',
       color: appStyle.monthTextColor,
-      margin: 10
+      margin: appStyle.headerPadding
     },
     arrow: {
-      padding: 10
+      padding: appStyle.headerPadding
     },
     arrowImage: {
       ...Platform.select({
